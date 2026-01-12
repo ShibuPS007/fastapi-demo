@@ -199,7 +199,7 @@ function App() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-badge">📦</span>
-          <h1>My Inventory App</h1>
+          <h1>My Inventory App 🚀 CI/CD Test</h1>
 
         </div>
         <div className="top-actions">

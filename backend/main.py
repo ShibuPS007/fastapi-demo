@@ -4,13 +4,17 @@ from models import Product
 from database import SessionLocal,engine
 import database_model
 from sqlalchemy.orm import Session
+import os
+
 
 app=FastAPI()
-
+origins = os.getenv("CORS_ORIGINS", "").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_methods=["*"]
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 database_model.Base.metadata.create_all(bind=engine)

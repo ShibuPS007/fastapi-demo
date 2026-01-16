@@ -2,13 +2,16 @@
 __pycache__/
 *.pyc
 .env
+fastenv/
+venv/
+.venv/
 
 # Node
 node_modules/
 npm-debug.log
 yarn.lock
 
-# Docker
+# Docker / logs
 *.log
 
 # OS

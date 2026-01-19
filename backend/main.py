@@ -12,57 +12,25 @@ import database_model
 from models import Product
 
 
-# -------------------------
-# Seed data
-# -------------------------
-PRODUCTS = [
-    Product(id=1, name="Phone", description="A smartphone", price=699.99, quantity=50),
-    Product(id=2, name="Laptop", description="A powerful laptop", price=999.99, quantity=30),
-    Product(id=6, name="Pen", description="A blue ink pen", price=1.99, quantity=100),
-    Product(id=7, name="Table", description="A wooden table", price=199.99, quantity=20),
-]
-
-
-# -------------------------
-# DB init (NEVER auto-run)
-# -------------------------
-def init_db():
-    db = SessionLocal()
-    try:
-        count = db.query(database_model.Product).count()
-        if count == 0:
-            for product in PRODUCTS:
-                db.add(database_model.Product(**product.model_dump()))
-            db.commit()
-    finally:
-        db.close()
-
-
-# -------------------------
-# Lifespan (startup/shutdown)
-# -------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    # ⛔ Skip DB during pytest
-    if os.getenv("TESTING") != "true":
-        retries = 10
-        while retries:
-            try:
-                database_model.Base.metadata.create_all(bind=engine)
-                init_db()
-                print("✅ Database initialized")
-                break
-            except OperationalError:
-                retries -= 1
-                print("⏳ Waiting for DB...")
-                time.sleep(2)
+    retries = 10
+    while retries:
+        try:
+            # ONLY create tables (no data insertion)
+            database_model.Base.metadata.create_all(bind=engine)
+            print("Database ready")
+            break
+        except OperationalError:
+            retries -= 1
+            print("Waiting for DB...")
+            time.sleep(2)
 
-        if retries == 0:
-            raise RuntimeError("❌ Database not reachable")
+    if retries == 0:
+        raise RuntimeError("Database not reachable")
 
     yield
-    # optional shutdown cleanup
 
 
 # -------------------------
@@ -70,10 +38,9 @@ async def lifespan(app: FastAPI):
 # -------------------------
 app = FastAPI(lifespan=lifespan)
 
-origins = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -134,7 +101,7 @@ def update_product(id: int, product: Product, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(db_product)
-    return {"message": "Product updated successfully", "product": db_product}
+    return db_product
 
 
 @app.delete("/products/{id}")

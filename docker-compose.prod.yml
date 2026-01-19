@@ -6,7 +6,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: Idly2004
       MYSQL_DATABASE: fast_api
-
+    ports:
+    - "3307:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
